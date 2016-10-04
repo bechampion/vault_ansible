@@ -18,7 +18,7 @@ This module installs ,
 
 #TODO:
 * rework variables from default
-* conditionls on selinux modules (-i takes too long)
+* conditionls on selinux modules (-i takes too long)  [DONE]
 * add source code of selinux vault policy so it can be audit2allow
 * check why unarchive winges on 2.1
 * loop needed on copy files :34
