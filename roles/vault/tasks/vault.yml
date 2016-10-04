@@ -1,27 +1,27 @@
 ---
 - name: Check vault is downloaded
-  stat: path="{{vault_temp_location}}" checksum_algo=sha256
+  stat: path="{{vault_app['download_to']}}" checksum_algo=sha256
   register: vault_stat
 
 - name: Check vault is in sbin
-  stat: path="{{vault_bin_location}}/vault"
+  stat: path="{{vault_app['bin_location']}}/vault"
   register: vault_bin_stat
 
 - name: Download hashicorp vault
   get_url:
-    url: "{{vault_download_url}}"
-    dest: "{{vault_temp_location}}"
-    checksum: "sha256:{{vault_download_checksum}}"
-  when: (vault_stat.stat.islnk is not defined) or (vault_stat.stat.checksum != "{{vault_download_checksum}}")
+    url: "{{vault_app['url']}}"
+    dest: "{{vault_app['download_to']}}"
+    checksum: "{{vault_app['algo']}}:{{vault_app['checksum']}}"
+  when: (vault_stat.stat.islnk is not defined) or (vault_stat.stat.checksum != "{{vault_app['checksum']}}")
 
-- file: path="{{ vault_config }}" state=directory 
+- file: path="{{vault_app['config_location']}}" state=directory 
 
-- copy: src=temp/vault.json dest="{{ vault_config }}" force=true 
+- template: src=temp/vault.j2 dest="{{vault_app['config_location']}}/vault.json" force=true
 
-- copy: src=temp/vault dest=/etc/init.d/ mode=755
+- template: src=temp/vault-init.j2 dest=/etc/init.d/vault mode=755
 
 - name: Unarchive vault
-  command: unzip "{{vault_temp_location}}" -d "{{vault_bin_location}}"
+  command: unzip "{{vault_app['download_to']}}" -d "{{vault_app['bin_location']}}"
   when: (vault_bin_stat.stat.islnk is not defined)
 
 

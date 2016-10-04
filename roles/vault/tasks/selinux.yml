@@ -1,13 +1,13 @@
 
-- file: path="{{ vault_selinux_policy_dir }}" state=directory
-- copy: src=temp/{{vault_selinux_policy_file}} dest="{{vault_selinux_policy_dir}}" force=true
+- file: path="{{vault_selinux['policy_dir']}}" state=directory
+- copy: src=temp/{{vault_selinux['policy_file']}} dest="{{vault_selinux['policy_dir']}}" force=true
 
 - name: Check if vault.pp is already loaded
   command: bash -c "semodule -l | grep vault | wc -l"
   register: semodule_count
 
 - name: Enable selinux policy module
-  command: semodule -i "{{vault_selinux_policy_dir}}/{{vault_selinux_policy_file}}"
+  command: semodule -i "{{vault_selinux['policy_dir']}}/{{vault_selinux['policy_file']}}"
   when: (semodule_count.stdout | int == 0 )
 
 - name: Mlock restore con
@@ -23,7 +23,8 @@
 - name: Semanage port
   command: semanage port -a -t vault_port_t -p tcp "{{item}}"
   with_items:
-    - "{{vault_ports_tagged}}"
+    - "{{vault_main_server['host_extra_ports']}}"
+    - "{{vault_main_server['host_port']}}"
   when: (item | string  not in semanage_ports.stdout.split(' '))
   ignore_errors: true
 

@@ -1,0 +1,8 @@
+backend "inmem" {
+  disable_mlock = 0
+}
+listener "tcp" {
+  address = "{{vault_main_server['host_address']}}:{{vault_main_server['host_port']}}"
+  tls_disable = 1
+}
+

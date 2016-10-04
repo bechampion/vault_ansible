@@ -1,21 +1,29 @@
 ---
 # defaults file for vault
-vault_ports_tagged: 
-  - 5200
-  - 5201
-  - 5202
-  - 5203
-vault_selinux_policy_file: vault.pp
-vault_selinux_policy_dir: /usr/local/vault_selinux/
-vault_download_url: "https://releases.hashicorp.com/vault/0.6.1/vault_0.6.1_linux_amd64.zip"
-vault_temp_location: /tmp/vault.zip
-vault_bin_location: /usr/sbin/
-vault_download_checksum: "4f248214e4e71da68a166de60cc0c1485b194f4a2197da641187b745c8d5b8be"
+vault_main_server: 
+  host_address: 127.0.0.1
+  host_port: 5200
+  host_extra_ports:
+    - 5201
+    - 5202
+    - 5203
+
+vault_app:
+  url: "https://releases.hashicorp.com/vault/0.6.1/vault_0.6.1_linux_amd64.zip"
+  checksum: "4f248214e4e71da68a166de60cc0c1485b194f4a2197da641187b745c8d5b8be"
+  algo: "sha256"
+  download_to: "/tmp/vault.zip"
+  bin_location: "/usr/sbin"
+  config_location: "/etc/vault"
+
+vault_selinux:
+  policy_file: "vault.pp"
+  policy_dir: "/usr/local/vault_selinux"
+  user_role: system_u
+  
 vault_system_user: vault
-vault_system_role: system_u
+
 go_version: "1.7"
-vault_config: /etc/vault
-vault_location: "dada"
 
 vault_backend_commands:
   - "setcap cap_ipc_lock=+ep /usr/sbin/vault"

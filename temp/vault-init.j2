@@ -24,13 +24,13 @@
 [ "$NETWORKING" = "no" ] && exit 0
 
 exec="/usr/sbin/vault"
-user="vault"
+user="{{vault_system_user}}"
 prog="vault"
 lockfile="/var/lock/subsys/$prog"
 pidfile="/var/run/${prog}.pid"
 logfile="/var/log/${prog}.log"
 sysconfig="/etc/sysconfig/$prog"
-confdir="/etc/vault/"
+confdir="{{vault_app['config_location']}}"
 
 [ -f $sysconfig ] && . $sysconfig
 
