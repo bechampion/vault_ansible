@@ -2,6 +2,9 @@
 # defaults file for vault
 vault_ports_tagged: 
   - 5200
+  - 5201
+  - 5202
+  - 5203
 vault_selinux_policy_file: vault.pp
 vault_selinux_policy_dir: /usr/local/vault_selinux/
 vault_download_url: "https://releases.hashicorp.com/vault/0.6.1/vault_0.6.1_linux_amd64.zip"
