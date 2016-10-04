@@ -1,0 +1,7 @@
+- user:
+    name: "{{vault_system_user}}"
+    comment: "Vault system uer"
+    system: yes
+    seuser: "{{vault_system_role}}"
+
+

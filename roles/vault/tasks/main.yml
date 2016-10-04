@@ -1,85 +1,10 @@
 ---
-###task separation with  -include: dada.yml
-- name: Install essential packages
-  yum: name={{ item.name }} state={{ item.state }}
-  with_items:
-    - "{{vault_needed_packages}}"
-  become: true
+- include: packages.yml
+- include: user.yml
+- include: vault.yml
+- include: selinux.yml
+- include: service.yml
 
-#I need a conditional here also move it to it's own task
-- file: path="{{ vault_selinux_policy_dir }}" state=directory 
-- copy: src=temp/{{vault_selinux_policy_file}} dest="{{vault_selinux_policy_dir}}" force=true 
-
-
-- name: Check if vault.pp is already loaded
-  command: bash -c "semodule -l | grep vault | wc -l"
-  register: semodule_count
-
-- name: Enable selinux policy module
-  command: semodule -i "{{vault_selinux_policy_dir}}/{{vault_selinux_policy_file}}"
-  when: (semodule_count.stdout == 0 )
-
-#I need a conditional here
-- user: 
-    name: "{{vault_system_user}}" 
-    comment: "Vault system uer" 
-    system: yes
-    seuser: "{{vault_system_role}}"
-
-#to disable when ready
-- name: Check vault is downloaded
-  stat: path="{{vault_temp_location}}" checksum_algo=sha256
-  register: vault_stat
-
-- name: Check vault is in sbin
-  stat: path="{{vault_bin_location}}/vault"
-  register: vault_bin_stat
-
-- name: Download hashicorp vault
-  get_url:
-    url: "{{vault_download_url}}"
-    dest: "{{vault_temp_location}}"
-    checksum: "sha256:{{vault_download_checksum}}"
-  when: (vault_stat.stat.islnk is not defined) or (vault_stat.stat.checksum != "{{vault_download_checksum}}")
-#unarchive bug on 2.1 ..moving to command :(
-#- unarchive:
-    #src: "{{vault_temp_location}}"
-    #dest: "{{vault_bin_location}}"
-- file: path="{{ vault_config }}" state=directory 
-
-
-#loop needed , and take the files from j2 templates
-- copy: src=temp/vault.json dest="{{ vault_config }}" force=true 
-- copy: src=temp/vault dest=/etc/init.d/ mode=755
-##not nice
-
-
-- name: Unarchive vault
-  command: unzip "{{vault_temp_location}}" -d "{{vault_bin_location}}"
-  when: (vault_bin_stat.stat.islnk is not defined)
-
-
-####should be on a selinux only task
-- name: Mlock restore con
-  command: "{{item}}"
-  with_items:
-     - "setcap cap_ipc_lock=+ep /usr/sbin/vault"
-     - "restorecon -v /usr/sbin/vault"
-
-###nice block , should be a block
-- name: check ports are tagged
-  command: bash -c "semanage port -l | grep vault | egrep '[0-9]*' -o  | tr '\n' ' '"
-  register: semanage_ports
-
-- name: Semanage port
-  command: semanage port -a -t vault_port_t -p tcp "{{item}}"
-  with_items:
-    - "{{vault_ports_tagged}}"
-  when: (item | string  not in semanage_ports.stdout.split(' '))
-  ignore_errors: true
-######
-
-- name: enable sysv supervisord service
-  service: name=vault enabled=yes state=started
+  
 
 

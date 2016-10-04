@@ -1,0 +1,3 @@
+- name: enable sysv supervisord service
+  service: name=vault enabled=yes state=started
+

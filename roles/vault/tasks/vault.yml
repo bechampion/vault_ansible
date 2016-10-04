@@ -1,0 +1,28 @@
+---
+- name: Check vault is downloaded
+  stat: path="{{vault_temp_location}}" checksum_algo=sha256
+  register: vault_stat
+
+- name: Check vault is in sbin
+  stat: path="{{vault_bin_location}}/vault"
+  register: vault_bin_stat
+
+- name: Download hashicorp vault
+  get_url:
+    url: "{{vault_download_url}}"
+    dest: "{{vault_temp_location}}"
+    checksum: "sha256:{{vault_download_checksum}}"
+  when: (vault_stat.stat.islnk is not defined) or (vault_stat.stat.checksum != "{{vault_download_checksum}}")
+
+- file: path="{{ vault_config }}" state=directory 
+
+- copy: src=temp/vault.json dest="{{ vault_config }}" force=true 
+
+- copy: src=temp/vault dest=/etc/init.d/ mode=755
+
+- name: Unarchive vault
+  command: unzip "{{vault_temp_location}}" -d "{{vault_bin_location}}"
+  when: (vault_bin_stat.stat.islnk is not defined)
+
+
+

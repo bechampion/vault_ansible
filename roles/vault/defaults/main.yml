@@ -16,11 +16,13 @@ vault_system_role: system_u
 go_version: "1.7"
 vault_config: /etc/vault
 vault_location: "dada"
+
 vault_backend_commands:
-  - "setcap cap_ipc_lock=+ep $(readlink -f $(which vault))"
+  - "setcap cap_ipc_lock=+ep /usr/sbin/vault"
+  - "restorecon -v /usr/sbin/vault"
 
 vault_needed_packages:
   - { name: policycoreutils-python-2.2.5-20.el7.x86_64 , state: present }
-  - { name: wget , state: present }
-  - { name: unzip , state: present }
+  - { name: wget-1.14-10.el7_0.1.x86_64, state: present }
+  - { name: unzip-6.0-15.el7.x86_64, state: present }
 
