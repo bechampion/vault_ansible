@@ -1,0 +1,140 @@
+#!/bin/sh
+#
+# vault - this script manages the vault server
+#
+# chkconfig:   345 96 04
+# processname: vault
+
+### BEGIN INIT INFO
+# Provides:       vault
+# Required-Start: $local_fs $network
+# Required-Stop:  $local_fs $network
+# Default-Start: 3 4 5
+# Default-Stop:  0 1 2 6
+# Short-Description: Manage the vault server
+### END INIT INFO
+
+# Source function library.
+. /etc/rc.d/init.d/functions
+
+# Source networking configuration.
+. /etc/sysconfig/network
+
+# Check that networking is up.
+[ "$NETWORKING" = "no" ] && exit 0
+
+exec="/usr/sbin/vault"
+user="vault"
+prog="vault"
+lockfile="/var/lock/subsys/$prog"
+pidfile="/var/run/${prog}.pid"
+logfile="/var/log/${prog}.log"
+sysconfig="/etc/sysconfig/$prog"
+confdir="/etc/vault/"
+
+[ -f $sysconfig ] && . $sysconfig
+
+start() {
+    [ -x $exec ] || exit 5
+
+    echo -n $"Starting $prog: "
+    touch $logfile $pidfile
+    chown ${user}: $logfile
+    chown ${user}: $pidfile
+    daemon --user=${user} "{ $exec server -config=$confdir &>> $logfile & }; echo \$! >| $pidfile"
+    ##### init should be done on ansible...
+    #sudo -u mysys VAULT_ADDR='http://localhost:5200'  /usr/sbin/vault init
+    #catch 3 keys , unseal with those 3
+
+    RETVAL=$?
+    if [ $RETVAL -eq 0 ]; then
+        touch $lockfile
+        unseal
+    fi
+    echo
+    return $RETVAL
+}
+
+stop() {
+    echo -n $"Stopping $prog: "
+    kill -9 $(cat ${pidfile}) 2>> $logfile
+    rm -rf ${pidfile}
+    RETVAL=$?
+    [ $RETVAL -eq 0 ] && rm -f $lockfile
+    echo
+    return $RETVAL
+}
+
+restart() {
+    stop
+    start
+}
+
+reload() {
+    echo -n $"Reloading $prog: "
+    kill $pidfile -HUP
+    echo
+}
+
+force_reload() {
+    restart
+}
+
+rh_status() {
+    status $prog
+}
+
+rh_status_q() {
+    rh_status >/dev/null 2>&1
+}
+
+unseal() {
+    while :
+    do
+        ss -pl | fgrep "((\"$prog\"," > /dev/null
+        [ $? -eq 0 ] && break
+        sleep 0.1
+    done
+    for key in $KEYS; do $exec unseal $CERT $key >> $logfile ; done
+}
+init() { 
+    $exec init >> $logfile
+}
+
+seal() {
+    $exec seal $CERT >> $logfile
+}
+
+case "$1" in
+    start)
+        rh_status_q && exit 0
+        $1
+        ;;
+    stop)
+        $1
+        ;;
+    restart)
+        $1
+        ;;
+    status)
+        rh_status
+        ;;
+    condrestart|try-restart)
+        rh_status_q || exit 7
+        restart
+        ;;
+    unseal)
+        $1
+        ;;
+    seal)
+        $1
+        ;;
+    init)
+	$1
+	;;
+    *)
+        echo $"Usage: $0 {start|stop|status|restart|condrestart|try-restart|unseal|seal}"
+        exit 2
+esac
+
+exit $?
