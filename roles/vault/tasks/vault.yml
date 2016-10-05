@@ -7,11 +7,6 @@
   stat: path="{{vault_app['bin_location']}}/vault"
   register: vault_bin_stat
 
-- assert:
-    that:
-      - vault_stat.stat.islnk is defined
-      - vault_stat.stat.checksum != "{{vault_app['checksum']}}"
-    msg: "asserting to check the existence/checksum of {{vault_app['bin_location']}} Failed!"
 
 - name: Download hashicorp vault
   get_url:
@@ -19,6 +14,12 @@
     dest: "{{vault_app['download_to']}}"
     checksum: "{{vault_app['algo']}}:{{vault_app['checksum']}}"
   when: (vault_stat.stat.islnk is not defined) or (vault_stat.stat.checksum != "{{vault_app['checksum']}}")
+
+#- assert:
+    #that:
+      #- vault_stat.stat.islnk is defined
+      #- vault_stat.stat.checksum == "{{vault_app['checksum']}}"
+    #msg: "asserting to check the existence/checksum of {{vault_app['bin_location']}} Failed!"
 
 - file: path="{{vault_app['config_location']}}" state=directory 
 
