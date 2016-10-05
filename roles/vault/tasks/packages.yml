@@ -3,6 +3,10 @@
   command: bash -c "rpm -qa | tr '\n' ' '"
   register: packages_installed
 
+- assert:
+    that:
+      - " packages_installed.stdout.split(' ') | length > 0"
+
 - name: Install essential packages
   yum: name={{ item.name }} state={{ item.state }}
   with_items:

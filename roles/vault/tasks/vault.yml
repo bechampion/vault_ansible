@@ -7,6 +7,12 @@
   stat: path="{{vault_app['bin_location']}}/vault"
   register: vault_bin_stat
 
+- assert:
+    that:
+      - vault_stat.stat.islnk is defined
+      - vault_stat.stat.checksum != "{{vault_app['checksum']}}"
+    msg: "asserting to check the existence/checksum of {{vault_app['bin_location']}} Failed!"
+
 - name: Download hashicorp vault
   get_url:
     url: "{{vault_app['url']}}"
