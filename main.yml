@@ -4,3 +4,4 @@
   roles: 
     - ansible-role-golang
     - vault
+    - ansible-role-nginx

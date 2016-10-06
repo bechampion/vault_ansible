@@ -20,6 +20,7 @@ vault_selinux:
   policy_file: "vault.pp"
   policy_dir: "/usr/local/vault_selinux"
   user_role: system_u
+  http_connect_boolean: true
   
 vault_system_user: vault
 

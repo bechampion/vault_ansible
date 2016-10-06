@@ -26,5 +26,11 @@
     - "{{vault_main_server['host_extra_ports']}}"
     - "{{vault_main_server['host_port']}}"
   when: (item | string  not in semanage_ports.stdout.split(' '))
-  ignore_errors: true
+  ignore_errors: true\
+
+# i will probably need some assertion ..
+- name: Set httpt_t booleant to connect to vault_t
+  command: semanage boolean --modify --on httpd_can_network_connect
+  when: "{{vault_selinux['http_connect_boolean']}}"
+
 
